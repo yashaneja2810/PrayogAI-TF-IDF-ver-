@@ -217,7 +217,8 @@ Answer:"""
                 if not response_text or len(response_text.strip()) == 0:
                     return "I'm sorry, I couldn't generate a meaningful response at this time. Please try again."
                 return response_text.strip()
-            except Exception:
+            except Exception as e:
+                logger.error(f"Gemini API error for bot {bot_id}: {e}", exc_info=True)
                 return "I apologize, but I'm having trouble generating a response right now. Please try again later."
             
         except HTTPException:
