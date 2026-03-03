@@ -171,65 +171,47 @@ class ChatService:
             collection_name = self._get_collection_name(bot_id)
             
             # 🔹 Improved retrieval
-            results = self.vector_store.search(collection_name, query, limit=8)
-            
+            # Retrieve top-5 chunks — enough context, minimal tokens
+            results = self.vector_store.search(collection_name, query, limit=5)
+
             if not results:
-                return "I don’t have any relevant information to answer your question right now."
-            
-            # 🔹 Lowered threshold and deduplication
+                return "I don't have any relevant information to answer your question right now."
+
+            # Deduplicate, filter low-score noise, truncate each chunk to 300 chars
+            seen = set()
             context_chunks = []
             for result in results:
-                text = result.get("text", "")
+                text = result.get("text", "").strip()
                 score = result.get("score", 0)
-                if score >= 0.15 and text.strip():
-                    context_chunks.append(text.strip())
-            
-            # 🔹 Fallback broader search
+                if score >= 0.10 and text and text not in seen:
+                    seen.add(text)
+                    context_chunks.append(text[:300])
+
             if not context_chunks:
-                try:
-                    broader_results = self.vector_store.search(collection_name, query, limit=12)
-                    context_chunks = [r.get("text", "") for r in broader_results if r.get("text")]
-                except Exception:
-                    pass
-            
-            # 🔹 Deduplicate & merge
-            unique_chunks = list(dict.fromkeys(context_chunks))
-            context = "\n\n".join(f"- {chunk}" for chunk in unique_chunks[:10])
+                # Use top-3 results regardless of score instead of a second Qdrant call
+                context_chunks = [
+                    r.get("text", "").strip()[:300]
+                    for r in results[:3]
+                    if r.get("text", "").strip()
+                ]
+
+            context = "\n".join(f"- {chunk}" for chunk in context_chunks[:5])
             bot_name = bot.get('name', 'an AI assistant')
-            
-            # 🔹 Professional prompt with natural tone
-            prompt = f"""You are {bot_name}, a professional and friendly assistant. You speak like a knowledgeable human, not a search engine or data processor.
 
-RULES:
-1. NEVER mention "documents", "excerpts", "context", "sources", "database", "records", "files", "data", or any internal mechanism. You simply KNOW this information firsthand.
-2. NEVER say "the document doesn't specify", "no information available in my records", "based on the provided data", or "according to my sources". If you don't know, say "I don't have that information right now."
-3. Understand SYNONYMS: owner=seller, contact number=phone, price=cost, available=in stock, details=info.
-4. Combine related information intelligently. Don't be overly literal with keyword matching.
-5. If the knowledge contains garbled characters, broken unicode, or mojibake (e.g. symbols like →┤ ╣╠ ╩ or random box characters), SKIP those characters entirely. Describe the element in plain words instead (e.g. say "the toggle icon in the header" instead of pasting broken symbols).
+            # Compact prompt (~120 tokens vs old ~700) — same quality, far fewer tokens
+            prompt = f"""You are {bot_name}, a knowledgeable assistant. Answer using ONLY the knowledge below.
+- Speak naturally like a human expert. Be concise: 2-4 sentences for simple questions.
+- Never mention "documents", "files", "context", "data", or any internal mechanism.
+- Understand synonyms: owner=seller, phone=contact, price=cost, available=in stock.
+- Skip garbled/broken characters — describe elements in plain words instead.
+- If not in the knowledge, say "I don't have that information right now."
+- Use **bold** only for names/prices. Lists only for 3+ distinct items. Never repeat the question.
 
-RESPONSE STYLE — THIS IS CRITICAL:
-- Write in natural, flowing sentences and short paragraphs. Sound like a helpful human expert, NOT like a data dump.
-- Be CONCISE. Get to the point quickly. Avoid filler phrases like "Here's what I found" or "Based on my knowledge".
-- Do NOT overuse bullet points or lists. Use them ONLY when listing 3+ distinct items (like products, features, or steps).
-- Use **bold** SPARINGLY — only for names, prices, or critical details, not for every other word.
-- Do NOT start responses with generic summaries or introductions. Jump straight into the answer.
-- Keep responses SHORT — 2-4 sentences for simple questions, a short paragraph for complex ones.
-- Never repeat the question back to the user.
-
-BAD example (too structured, too many bullets):
-"**Shoply** is a demo shopping website. Here's what you should know:
-* **Product Categories**: Electronics, clothing
-* **Key Features**: Cart, wishlist, orders"
-
-GOOD example (natural, professional):
-"Shoply is a demo shopping site with products across electronics, clothing, home goods, and beauty. You can browse products, add them to your cart or wishlist, place orders, and manage your account settings."
-
-Available Knowledge:
+Knowledge:
 {context}
 
-User's Question: {query}
-
-Respond naturally and professionally:"""
+Question: {query}
+Answer:"""
             try:
                 response_text = await self.ai_service.generate_response(prompt)
                 if not response_text or len(response_text.strip()) == 0:
