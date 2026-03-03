@@ -5,15 +5,9 @@ settings = get_settings()
 
 from threading import Lock
 
-# Max tokens in the generated reply — keeps responses concise and saves quota
-_GENERATION_CONFIG = {
-    "max_output_tokens": 400,
-    "temperature": 0.4,
-}
-
 class AIService:
     _instance = None
-    _model = None
+    _client = None
     _lock = Lock()
     _initialized = False
 
@@ -30,31 +24,37 @@ class AIService:
             return
         with self._lock:
             if not self._initialized:
-                self._model = None
+                self._client = None
                 self._initialized = True
 
     @property
-    def model(self):
-        if self._model is None:
+    def client(self):
+        if self._client is None:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=settings.GOOGLE_API_KEY)
-                # gemini-1.5-flash: 1,500 req/day free vs ~25-50 for 2.5-flash preview
-                self._model = genai.GenerativeModel(
-                    'gemini-1.5-flash',
-                    generation_config=_GENERATION_CONFIG,
-                )
+                from google import genai
+                # google-genai (new SDK) — 1,500 req/day free on gemini-1.5-flash
+                self._client = genai.Client(api_key=settings.GOOGLE_API_KEY)
             except ImportError:
-                raise RuntimeError("Failed to initialize Google AI model. Please check your installation.")
-        return self._model
+                raise RuntimeError("Failed to initialize Google AI client. Please check your installation.")
+        return self._client
 
     async def generate_response(self, prompt: str, context: str = "") -> str:
         """Generate a response using the AI model (non-blocking via asyncio.to_thread)"""
         try:
-            model = self.model
+            from google.genai import types
+            client = self.client
             full_prompt = f"Context:\n{context}\n\nQuestion: {prompt}" if context else prompt
+            config = types.GenerateContentConfig(
+                max_output_tokens=400,
+                temperature=0.4,
+            )
             # generate_content is synchronous — run in thread pool to avoid blocking event loop
-            response = await asyncio.to_thread(model.generate_content, full_prompt)
+            response = await asyncio.to_thread(
+                client.models.generate_content,
+                model='gemini-1.5-flash',
+                contents=full_prompt,
+                config=config,
+            )
             return response.text
         except Exception as e:
             raise RuntimeError(f"Error generating AI response: {str(e)}")
