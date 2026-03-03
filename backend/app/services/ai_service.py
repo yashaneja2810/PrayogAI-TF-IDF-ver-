@@ -32,7 +32,7 @@ class AIService:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=settings.GOOGLE_API_KEY)
-                self._model = genai.GenerativeModel('gemini-1.5-pro')
+                self._model = genai.GenerativeModel('gemini-1.5-flash')
             except ImportError:
                 raise RuntimeError("Failed to initialize Google AI model. Please check your installation.")
         return self._model
