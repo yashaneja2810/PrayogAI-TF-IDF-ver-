@@ -8,7 +8,6 @@
   var botId = script.getAttribute('data-bot-id') || '';
   var companyName = script.getAttribute('data-company-name') || 'AI Assistant';
   var widgetColor = script.getAttribute('data-color') || '#2563eb';
-  var apiUrl = script.getAttribute('data-api-url') || 'https://prayogai-tf-idf-ver.onrender.com';
 
   // Theme support
   var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -222,8 +221,8 @@
     if (!text) return;
     addMessage(text, 'user');
     input.value = '';
-    // Call backend
-    fetch(apiUrl + '/api/chat', {
+    // Call backend (updated to /api/chat)
+    fetch('http://localhost:8000/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bot_id: botId, query: text })
