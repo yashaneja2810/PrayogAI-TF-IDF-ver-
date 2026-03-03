@@ -1,0 +1,8 @@
+backend/
+*.py
+*.pyc
+__pycache__/
+requirements.txt
+Procfile
+render.yaml
+runtime.txt
