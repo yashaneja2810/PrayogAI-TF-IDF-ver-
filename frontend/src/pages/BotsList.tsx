@@ -246,7 +246,7 @@ export const BotsList: React.FC = () => {
             <p className="text-[13px] text-gray-600">Add this to your website's <code className="text-[11px] bg-gray-100 px-1 py-0.5 rounded">&lt;body&gt;</code> for <span className="font-semibold">{widgetModalBot.name}</span>:</p>
             <pre className="bg-gray-900 text-gray-300 text-[12px] p-4 rounded-lg overflow-x-auto select-all font-mono leading-relaxed">
               {`<script 
-  src="http://localhost:5173/widget/widget.js"
+  src="https://prayog-ai-tf-idf-ver.vercel.app/widget/widget.js"
   data-bot-id="${widgetModalBot.bot_id}"
   data-company-name="${widgetModalBot.name}"
   data-color="#2563eb">
