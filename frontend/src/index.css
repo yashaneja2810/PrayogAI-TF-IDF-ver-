@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-[#fafafa] text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white text-[13px] font-medium rounded-lg hover:bg-black transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-900/20;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 text-[13px] font-medium rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-150;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-red-600 text-[13px] font-medium rounded-lg border border-red-200 hover:bg-red-50 hover:border-red-300 transition-all duration-150;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-[9px] bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all duration-150;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .slide-in {
+    animation: slideIn 0.2s ease-out;
+  }
+
+  /* Markdown rendering inside chat bubbles */
+  .chat-markdown p {
+    margin: 0.25rem 0;
+  }
+
+  .chat-markdown p:first-child {
+    margin-top: 0;
+  }
+
+  .chat-markdown p:last-child {
+    margin-bottom: 0;
+  }
+
+  .chat-markdown strong {
+    @apply font-semibold;
+  }
+
+  .chat-markdown em {
+    @apply italic;
+  }
+
+  .chat-markdown ul,
+  .chat-markdown ol {
+    @apply pl-4 my-1.5;
+  }
+
+  .chat-markdown ul {
+    @apply list-disc;
+  }
+
+  .chat-markdown ol {
+    @apply list-decimal;
+  }
+
+  .chat-markdown li {
+    @apply my-0.5;
+  }
+
+  .chat-markdown h1,
+  .chat-markdown h2,
+  .chat-markdown h3 {
+    @apply font-semibold mt-2 mb-1;
+  }
+
+  .chat-markdown code {
+    @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono;
+  }
+
+  .chat-markdown pre {
+    @apply bg-gray-100 rounded-md p-2 my-1.5 overflow-x-auto;
+  }
+
+  .chat-markdown pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .chat-markdown a {
+    @apply text-blue-600 underline hover:text-blue-800;
+  }
+
+  .chat-markdown blockquote {
+    @apply border-l-2 border-gray-300 pl-3 my-1.5 text-gray-600 italic;
+  }
+}
