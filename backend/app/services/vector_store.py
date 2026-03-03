@@ -215,13 +215,13 @@ class VectorStoreService:
         try:
             query_vector = self._encode_texts([query])[0]
             
-            search_result = self.client.search(
+            search_result = self.client.query_points(
                 collection_name=collection_name,
-                query_vector=query_vector.tolist(),
+                query=query_vector.tolist(),
                 limit=limit,
                 with_payload=True,
                 with_vectors=False,
-            )
+            ).points
             
             results = []
             for scored_point in search_result:
