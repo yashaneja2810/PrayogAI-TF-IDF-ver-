@@ -177,7 +177,7 @@ class ChatService:
             if not results:
                 return "I don't have any relevant information to answer your question right now."
 
-            # Deduplicate, filter low-score noise, truncate each chunk to 300 chars
+            # Deduplicate, filter low-score noise, truncate each chunk to 500 chars
             seen = set()
             context_chunks = []
             for result in results:
@@ -185,12 +185,12 @@ class ChatService:
                 score = result.get("score", 0)
                 if score >= 0.10 and text and text not in seen:
                     seen.add(text)
-                    context_chunks.append(text[:300])
+                    context_chunks.append(text[:500])
 
             if not context_chunks:
                 # Use top-3 results regardless of score instead of a second Qdrant call
                 context_chunks = [
-                    r.get("text", "").strip()[:300]
+                    r.get("text", "").strip()[:500]
                     for r in results[:3]
                     if r.get("text", "").strip()
                 ]
